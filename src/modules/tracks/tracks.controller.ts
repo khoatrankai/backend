@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common"
-import type { CreateTrackDto } from "src/dto/create-track.dto"
-import type { UpdateTrackDto } from "src/dto/update-track.dto"
-import type { CreateCategoryTrackDto } from "src/dto/create-category-track.dto"
 import { TracksService } from "./tracks.service"
+import { CreateTrackDto } from "src/dto/create-track.dto"
+import { CreateCategoryTrackDto } from "src/dto/create-category-track.dto"
+import { UpdateTrackDto } from "src/dto/update-track.dto"
 
 @Controller("tracks")
 export class TracksController {

@@ -3,53 +3,53 @@ import { IsString, IsNumber, IsBoolean, IsOptional } from "class-validator"
 export class CreateSoftwareDto {
   @IsString()
   @IsOptional()
-  name?: string
+  name: string
 
   @IsString()
   @IsOptional()
-  description?: string
+  description: string
 
   @IsString()
   @IsOptional()
-  version?: string
+  version: string
 
   @IsString()
   @IsOptional()
-  size?: string
+  size: string
 
   @IsString()
   @IsOptional()
-  date?: string
+  date: string
 
   @IsOptional()
   @IsNumber()
-  downloads?: number
+  downloads: number
 
   @IsOptional()
   @IsNumber()
-  rating?: number
+  rating: number
 
   @IsString()
   @IsOptional()
-  category?: string
+  category: string
 
   @IsString()
   @IsOptional()
-  platform?: string
+  platform: string
 
   @IsOptional()
   @IsBoolean()
-  featured?: boolean
+  featured: boolean
 
   @IsString()
   @IsOptional()
-  requirements?: string
+  requirements: string
 
   @IsString()
   @IsOptional()
-  developer?: string
+  developer: string
 
   @IsString()
   @IsOptional()
-  license?: string
+  license: string
 }

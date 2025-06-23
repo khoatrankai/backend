@@ -1,15 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common"
-import type { CreateSoftwareDto } from "src/dto/create-software.dto"
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from "@nestjs/common"
+import { SoftwareService } from "./software.service"
 import type { UpdateSoftwareDto } from "src/dto/update-software.dto"
-import { SoftwareService } from "./software.service";
+import { UpdatePlatformDto } from "src/dto/update-category-platform.dto"
+import { CreatePlatformDto } from "src/dto/create-category-platform.dto"
+import { UpdateCategorySoftwareDto } from "src/dto/update-category-software.dto"
+import { CreateCategorySoftwareDto } from "src/dto/create-category-software.dto"
+import { CreateSoftwareDto } from "src/dto/create-software.dto"
 
 @Controller("software")
 export class SoftwareController {
   constructor(private readonly softwareService: SoftwareService) {}
 
   @Post()
-  create(@Body() createSoftwareDto: CreateSoftwareDto) {
-    return this.softwareService.create(createSoftwareDto);
+  async create(@Body() data: CreateSoftwareDto) {
+    return await this.softwareService.create(data)
   }
 
   @Get()
@@ -40,9 +53,30 @@ export class SoftwareController {
     return this.softwareService.findAllPlatforms()
   }
 
+  @Post("categories")
+  async createCategory(@Body() data: CreateCategorySoftwareDto) {
+    // console.log(data)
+    return this.softwareService.createCategory(data)
+  }
+
+  @Patch("categories/:id")
+  updateCategory(@Param("id") id: string, @Body() data: UpdateCategorySoftwareDto) {
+    return this.softwareService.updateCategory(id, data)
+  }
+
+  @Post("platforms")
+  createPlatform(@Body() data: CreatePlatformDto) {
+    return this.softwareService.createPlatform(data)
+  }
+
+  @Patch("platforms/:id")
+  updatePlatform(@Param("id") id: string, @Body() data: UpdatePlatformDto) {
+    return this.softwareService.updatePlatform(id, data)
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
-    return this.softwareService.findOne(id);
+    return this.softwareService.findOne(id)
   }
 
   @Patch(":id")
@@ -52,11 +86,11 @@ export class SoftwareController {
 
   @Patch(":id/downloads")
   incrementDownloads(@Param("id") id: string) {
-    return this.softwareService.incrementDownloads(id);
+    return this.softwareService.incrementDownloads(id)
   }
 
   @Delete(":id")
   remove(@Param("id") id: string) {
-    return this.softwareService.remove(id);
+    return this.softwareService.remove(id)
   }
 }

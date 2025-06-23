@@ -10,5 +10,6 @@ import { Platform } from "src/database/entities/softwares/platform.entity"
   imports: [TypeOrmModule.forFeature([Software, CategoryPlatform, Platform])],
   controllers: [SoftwareController],
   providers: [SoftwareService],
+  exports: [SoftwareService],
 })
 export class SoftwareModule {}

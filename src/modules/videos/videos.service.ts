@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { HttpStatus, Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { In, type Repository } from "typeorm"
 import type { CreateVideoDto } from "src/dto/create-video.dto"
 import type { UpdateVideoDto } from "src/dto/update-video.dto"
 import { CategoryVideo } from "src/database/entities/videos/category-video.entity"
 import { Video } from "src/database/entities/videos/video.entity"
+import { CreateCategoryVideoDto } from "src/dto/create-category-videos.dto"
 
 @Injectable()
 export class VideosService {
@@ -32,6 +33,16 @@ export class VideosService {
       order: { date: "DESC" },
     })
   }
+
+  async createCategory(createCategoryDto: CreateCategoryVideoDto) {
+      const category = this.categoryVideoRepository.create(createCategoryDto);
+      const result = await this.categoryVideoRepository.save(category);
+      return {
+        statusCode: HttpStatus.OK,
+        message: "Category created successfully",
+        data: result,
+      };
+    }
 
   async findOne(id: string): Promise<Video> {
     const video = await this.videosRepository.findOne({

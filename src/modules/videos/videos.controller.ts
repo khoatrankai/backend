@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Patch, Param, Delete, Query } from "@nestjs/common"
-import type { CreateVideoDto } from "src/dto/create-video.dto"
 import type { UpdateVideoDto } from "src/dto/update-video.dto"
 import { Body } from "@nestjs/common"
 import { VideosService } from "./videos.service"
+import { CreateCategoryVideoDto } from "src/dto/create-category-videos.dto"
+import { CreateVideoDto } from "src/dto/create-video.dto"
 
 @Controller("videos")
 export class VideosController {
@@ -25,6 +26,11 @@ export class VideosController {
   findAllCategories() {
     return this.videosService.findAllCategories()
   }
+
+   @Post("categories")
+    createCategory(@Body() createCategoryDto: CreateCategoryVideoDto) {
+      return this.videosService.createCategory(createCategoryDto)
+    }
 
   @Get(":id")
   findOne(@Param("id") id: string) {
