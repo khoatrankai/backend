@@ -51,5 +51,9 @@ export class CreateSoftwareDto {
 
   @IsString()
   @IsOptional()
+  link: string
+
+  @IsString()
+  @IsOptional()
   license: string
 }

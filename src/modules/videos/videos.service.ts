@@ -1,90 +1,151 @@
-import { HttpStatus, Injectable, NotFoundException } from "@nestjs/common"
-import { InjectRepository } from "@nestjs/typeorm"
-import { In, type Repository } from "typeorm"
-import type { CreateVideoDto } from "src/dto/create-video.dto"
-import type { UpdateVideoDto } from "src/dto/update-video.dto"
-import { CategoryVideo } from "src/database/entities/videos/category-video.entity"
-import { Video } from "src/database/entities/videos/video.entity"
-import { CreateCategoryVideoDto } from "src/dto/create-category-videos.dto"
+import { HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { In, type Repository } from "typeorm";
+import type { CreateVideoDto } from "src/dto/create-video.dto";
+import type { UpdateVideoDto } from "src/dto/update-video.dto";
+import { CategoryVideo } from "src/database/entities/videos/category-video.entity";
+import { Video } from "src/database/entities/videos/video.entity";
+import { CreateCategoryVideoDto } from "src/dto/create-category-videos.dto";
 
 @Injectable()
 export class VideosService {
-  private videosRepository: Repository<Video>
-  private categoryVideoRepository: Repository<CategoryVideo>
+  private videosRepository: Repository<Video>;
+  private categoryVideoRepository: Repository<CategoryVideo>;
+
   constructor(
     @InjectRepository(Video)
     videosRepository: Repository<Video>,
     @InjectRepository(CategoryVideo)
     categoryVideoRepository: Repository<CategoryVideo>,
   ) {
-    this.videosRepository = videosRepository
-    this.categoryVideoRepository = categoryVideoRepository
+    this.videosRepository = videosRepository;
+    this.categoryVideoRepository = categoryVideoRepository;
   }
 
-  async create(createVideoDto: CreateVideoDto): Promise<Video> {
-    const category = await this.categoryVideoRepository.findOne({where:{id:createVideoDto.category}})
-    const video = this.videosRepository.create({...createVideoDto,category})
-    return this.videosRepository.save(video)
-  }
-
-  findAll(): Promise<Video[]> {
-    return this.videosRepository.find({
-      relations: ["category"],
-      order: { date: "DESC" },
-    })
-  }
-
-  async createCategory(createCategoryDto: CreateCategoryVideoDto) {
-      const category = this.categoryVideoRepository.create(createCategoryDto);
-      const result = await this.categoryVideoRepository.save(category);
-      return {
-        statusCode: HttpStatus.OK,
-        message: "Category created successfully",
-        data: result,
-      };
+  // Tạo video
+  async create(createVideoDto: CreateVideoDto): Promise<any> {
+    const category = await this.categoryVideoRepository.findOne({ where: { id: createVideoDto.category } });
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${createVideoDto.category} not found`);
     }
 
-  async findOne(id: string): Promise<Video> {
+    const video = this.videosRepository.create({ ...createVideoDto, category });
+    const result = await this.videosRepository.save(video);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: "Video created successfully",
+      data: result,
+    };
+  }
+
+  // Lấy tất cả video
+  async findAll(): Promise<any> {
+    const videos = await this.videosRepository.find({
+      relations: ["category"],
+      order: { date: "DESC" },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Videos fetched successfully",
+      data: videos,
+    };
+  }
+
+  // Tạo category cho video
+  async createCategory(createCategoryDto: CreateCategoryVideoDto): Promise<any> {
+    const category = this.categoryVideoRepository.create(createCategoryDto);
+    const result = await this.categoryVideoRepository.save(category);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: "Category created successfully",
+      data: result,
+    };
+  }
+
+  // Lấy một video theo ID
+  async findOne(id: string): Promise<any> {
     const video = await this.videosRepository.findOne({
       where: { id },
       relations: ["category"],
-    })
+    });
 
     if (!video) {
-      throw new NotFoundException(`Video with ID ${id} not found`)
+      throw new NotFoundException(`Video with ID ${id} not found`);
     }
 
-    return video
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Video fetched successfully",
+      data: video,
+    };
   }
 
-  async update(id: string, updateVideoDto: UpdateVideoDto): Promise<Video> {
-    const video = await this.findOne(id)
-    Object.assign(video, updateVideoDto)
-    return this.videosRepository.save(video)
+  // Cập nhật video
+  async update(id: string, updateVideoDto: UpdateVideoDto): Promise<any> {
+    const video = await this.findOne(id);
+    Object.assign(video, updateVideoDto);
+    const result = await this.videosRepository.save(video);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Video updated successfully",
+      data: result,
+    };
   }
 
-  async remove(id: string): Promise<void> {
-    const video = await this.findOne(id)
-    await this.videosRepository.remove(video)
+  // Xóa video
+  async remove(id: string): Promise<any> {
+    const video = await this.findOne(id);
+    await this.videosRepository.remove(video);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Video removed successfully",
+      data: null,  // Không có dữ liệu trả về sau khi xóa
+    };
   }
 
-  async findByCategory(categoryId: string): Promise<Video[]> {
-    return this.videosRepository.find({
-      where: { category:In([categoryId]) },
+  // Lấy video theo category ID
+  async findByCategory(categoryId: string): Promise<any> {
+    const videos = await this.videosRepository.find({
+      where: { category: In([categoryId]) },
       relations: ["category"],
       order: { date: "DESC" },
-    })
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Videos by category fetched successfully",
+      data: videos,
+    };
   }
 
-  async incrementViews(id: string): Promise<Video> {
-    const video = await this.findOne(id)
-    video.views += 1
-    return this.videosRepository.save(video)
+  // Tăng lượt xem
+  async incrementViews(id: string): Promise<any> {
+    const video = await this.findOne(id);
+    video.views += 1;
+    const result = await this.videosRepository.save(video);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Video views incremented successfully",
+      data: result,
+    };
   }
 
-  findAllCategories(): Promise<CategoryVideo[]> {
-    return this.categoryVideoRepository.find({
+  // Lấy tất cả categories
+  async findAllCategories(): Promise<any> {
+    const categories = await this.categoryVideoRepository.find({
       relations: ["videos"],
-    })
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Categories fetched successfully",
+      data: categories,
+    };
   }
 }

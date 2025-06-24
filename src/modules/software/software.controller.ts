@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from "@nestjs/common"
 import { SoftwareService } from "./software.service"
 import type { UpdateSoftwareDto } from "src/dto/update-software.dto"
@@ -15,13 +17,23 @@ import { CreatePlatformDto } from "src/dto/create-category-platform.dto"
 import { UpdateCategorySoftwareDto } from "src/dto/update-category-software.dto"
 import { CreateCategorySoftwareDto } from "src/dto/create-category-software.dto"
 import { CreateSoftwareDto } from "src/dto/create-software.dto"
+import { FileInterceptor } from "@nestjs/platform-express"
+import { storageSoftwaresConfig } from "src/lib/multer-upload"
 
 @Controller("software")
 export class SoftwareController {
   constructor(private readonly softwareService: SoftwareService) {}
 
   @Post()
-  async create(@Body() data: CreateSoftwareDto) {
+   @UseInterceptors(
+    FileInterceptor('coverSoftware', {
+            storage: storageSoftwaresConfig
+    }),
+      )
+  async create(@UploadedFile() file: Express.Multer.File,@Body() data: CreateSoftwareDto) {
+    if(file){
+      data.link = `/public/tracks/${file.filename}`;
+    }
     return await this.softwareService.create(data)
   }
 
@@ -80,7 +92,15 @@ export class SoftwareController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateSoftwareDto: UpdateSoftwareDto) {
+  @UseInterceptors(
+    FileInterceptor('coverSoftware', {
+            storage: storageSoftwaresConfig
+    }),
+      )
+  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateSoftwareDto: UpdateSoftwareDto) {
+    if(file){
+      updateSoftwareDto.link = `/public/tracks?id=${file.filename}`;
+    }
     return this.softwareService.update(id, updateSoftwareDto)
   }
 

@@ -55,7 +55,7 @@ export class NewsController {
   )
   create(@UploadedFile() file: Express.Multer.File,@Body() createNewsDto: CreateNewsDto) {
     if (file) {
-        createNewsDto.image = `/public/images/${file.filename}`;
+        createNewsDto.image = `/public/images?id=${file.filename}`;
       }
     return this.newsService.create(createNewsDto)
   }

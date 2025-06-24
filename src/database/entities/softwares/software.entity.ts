@@ -25,6 +25,9 @@ export class Software {
   @Column({ default: 0 })
   downloads: number
 
+  @Column({ nullable: true })
+  link: string
+
   @Column({ type: "decimal", precision: 3, scale: 2, default: 0 })
   rating: number
 

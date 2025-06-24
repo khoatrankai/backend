@@ -21,6 +21,9 @@ export class Video {
   @Column({ default: 0 })
   views: number
 
+  @Column({ nullable: true })
+  link: string
+
   @ManyToOne(
     () => CategoryVideo,
     (category) => category.videos,

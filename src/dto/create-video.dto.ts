@@ -28,4 +28,8 @@ export class CreateVideoDto {
   @IsString()
   @IsOptional()
   description?: string
+
+  @IsOptional()
+  @IsString()
+  link?: string
 }

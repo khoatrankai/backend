@@ -1,16 +1,26 @@
-import { Controller, Get, Post, Patch, Param, Delete, Query } from "@nestjs/common"
+import { Controller, Get, Post, Patch, Param, Delete, Query, UploadedFile, UseInterceptors } from "@nestjs/common"
 import type { UpdateVideoDto } from "src/dto/update-video.dto"
 import { Body } from "@nestjs/common"
 import { VideosService } from "./videos.service"
 import { CreateCategoryVideoDto } from "src/dto/create-category-videos.dto"
 import { CreateVideoDto } from "src/dto/create-video.dto"
+import { FileInterceptor } from "@nestjs/platform-express"
+import { storageVideosConfig } from "src/lib/multer-upload"
 
 @Controller("videos")
 export class VideosController {
   constructor(private readonly videosService: VideosService) {}
 
   @Post()
-  create(@Body() createVideoDto: CreateVideoDto) {
+  @UseInterceptors(
+      FileInterceptor('coverVideo', {
+        storage: storageVideosConfig,
+      }),
+    )
+  create(@UploadedFile() file: Express.Multer.File,@Body() createVideoDto: CreateVideoDto) {
+    if(file){
+      createVideoDto.link = `/public/videos?id=${file.filename}`;
+    }
     return this.videosService.create(createVideoDto)
   }
 

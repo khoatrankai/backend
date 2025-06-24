@@ -1,15 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from "@nestjs/common"
 import { TracksService } from "./tracks.service"
 import { CreateTrackDto } from "src/dto/create-track.dto"
 import { CreateCategoryTrackDto } from "src/dto/create-category-track.dto"
 import { UpdateTrackDto } from "src/dto/update-track.dto"
+import { FileInterceptor } from "@nestjs/platform-express"
+import { storageTracksConfig } from "src/lib/multer-upload"
 
 @Controller("tracks")
 export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
 
   @Post()
-  create(@Body() createTrackDto: CreateTrackDto) {
+  @UseInterceptors(
+  FileInterceptor('coverTrack', {
+          storage: storageTracksConfig
+  }),
+    )
+  create(@UploadedFile() file: Express.Multer.File,@Body() createTrackDto: CreateTrackDto) {
+     if(file){
+      createTrackDto.link = `/public/tracks?id=${file.filename}`;
+    }
     return this.tracksService.create(createTrackDto)
   }
 

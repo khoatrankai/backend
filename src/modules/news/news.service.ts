@@ -23,9 +23,9 @@ export class NewsService {
   ) {}
 
   async create(createNewsDto: CreateNewsDto) {
-    const categoryActivity = await this.categoryActivityRepository.findOne({ where: { id: createNewsDto.categoryActivity } })
-    const region = await this.regionRepository.findOne({ where: { id: createNewsDto.region } })
-    const category = await this.categoryNewsRepository.findOne({ where: { id: createNewsDto.category } })
+    const categoryActivity = createNewsDto.categoryActivity != "undefined" ? await this.categoryActivityRepository.findOne({ where: { id: createNewsDto.categoryActivity } }) : undefined
+    const region = createNewsDto.region != "undefined" ?  await this.regionRepository.findOne({ where: { id: createNewsDto.region } }):undefined
+    const category = createNewsDto.category != "undefined" ?  await this.categoryNewsRepository.findOne({ where: { id: createNewsDto.category } }):undefined
     const news = this.newsRepository.create({ ...createNewsDto, categoryActivity, region, category })
     const result = await this.newsRepository.save(news)
 
@@ -143,10 +143,14 @@ export class NewsService {
   }
 
   async update(id: string, updateNewsDto: UpdateNewsDto) {
-    const news = await this.newsRepository.findOne({ where: { id } })
-    if (!news) throw new NotFoundException(`News with ID ${id} not found`)
-    Object.assign(news, updateNewsDto)
-    const result = await this.newsRepository.save(news)
+    // const news = await this.newsRepository.findOne({ where: { id } })
+    // if (!news) throw new NotFoundException(`News with ID ${id} not found`)
+    // Object.assign(news, updateNewsDto)
+    // const result = await this.newsRepository.save(news)
+    const categoryActivity = updateNewsDto.categoryActivity != "undefined" ? await this.categoryActivityRepository.findOne({ where: { id: updateNewsDto.categoryActivity } }) : undefined
+    const region = updateNewsDto.region != "undefined" ?  await this.regionRepository.findOne({ where: { id: updateNewsDto.region } }):undefined
+    const category = updateNewsDto.category != "undefined" ?  await this.categoryNewsRepository.findOne({ where: { id: updateNewsDto.category } }):undefined
+    const result = await this.newsRepository.update(id, {...updateNewsDto,categoryActivity,region,category})
     return {
       statusCode: HttpStatus.OK,
       message: 'News updated successfully',
