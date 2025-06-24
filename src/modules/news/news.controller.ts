@@ -94,7 +94,15 @@ export class NewsController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateNewsDto: UpdateNewsDto) {
+  @UseInterceptors(
+    FileInterceptor('coverImage', {
+      storage: storageConfig,
+    }),
+  )
+  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateNewsDto: UpdateNewsDto) {
+     if (file) {
+        updateNewsDto.image = `/public/images?id=${file.filename}`;
+      }
     return this.newsService.update(id, updateNewsDto)
   }
 
