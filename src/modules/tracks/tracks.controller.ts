@@ -50,6 +50,11 @@ export class TracksController {
   }
 
   @Patch(":id")
+  @UseInterceptors(
+  FileInterceptor('coverTrack', {
+          storage: storageTracksConfig
+  }),
+    )
   update(@Param("id") id: string, @Body() updateTrackDto: UpdateTrackDto) {
     return this.tracksService.update(id, updateTrackDto)
   }

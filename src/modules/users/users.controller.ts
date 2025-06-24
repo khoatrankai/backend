@@ -1,14 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from "@nestjs/common"
 import type { CreateUserDto } from "src/dto/create-user.dto"
 import type { UpdateUserDto } from "src/dto/update-user.dto"
 import { UsersService } from "./users.service";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { storageConfig } from "src/lib/multer-upload";
 
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @UseInterceptors(
+  FileInterceptor('coverImage', {
+        storage: storageConfig,
+      }),
+    )
+  create(@UploadedFile() file: Express.Multer.File,@Body() createUserDto: CreateUserDto) {
+    if (file) {
+        createUserDto.avatar = `/public/images?id=${file.filename}`;
+      }
     return this.usersService.create(createUserDto);
   }
 

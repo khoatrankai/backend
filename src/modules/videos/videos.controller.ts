@@ -48,7 +48,15 @@ export class VideosController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateVideoDto: UpdateVideoDto) {
+  @UseInterceptors(
+      FileInterceptor('coverVideo', {
+        storage: storageVideosConfig,
+      }),
+    )
+  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateVideoDto: UpdateVideoDto) {
+      if(file){
+      updateVideoDto.link = `/public/videos?id=${file.filename}`;
+    }
     return this.videosService.update(id, updateVideoDto)
   }
 

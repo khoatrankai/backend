@@ -1,6 +1,6 @@
 import { IsString, IsEnum, IsOptional, IsNumber, IsBoolean } from "class-validator"
 import { NewsType } from "src/database/entities/news/news.entity"
-import { Type } from "class-transformer";
+import { Transform } from "class-transformer";
 
 export class CreateNewsDto {
   @IsString()
@@ -49,6 +49,6 @@ export class CreateNewsDto {
 
   @IsBoolean()
   @IsOptional()
-  @Type(()=> Boolean)
+  @Transform(({ value }) => value === 'true' || value === true)
   featured: boolean
 }
