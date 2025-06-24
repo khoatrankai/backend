@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put, UseInterceptors, UploadedFile } from "@nestjs/common"
 // import type { CreateNewsDto } from "src/dto/create-news.dto"
-import type { UpdateNewsDto } from "src/dto/update-news.dto"
 import { NewsService } from "./news.service"
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRegionDto } from "src/dto/create-region.dto"
@@ -9,6 +8,7 @@ import { CreateCategoryActivityDto } from "src/dto/create-category-activity.dto"
 import { UpdateCategoryActivityDto } from "src/dto/update-category-activity.dto"
 import { CreateNewsDto } from "src/dto/create-news.dto"
 import { storageConfig } from "src/lib/multer-upload";
+import { UpdateNewsDto } from "src/dto/update-news.dto";
 
 @Controller("news")
 export class NewsController {
