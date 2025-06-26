@@ -18,7 +18,7 @@ export class ImagesController {
     )
   create(@UploadedFile() file: Express.Multer.File,@Body() createImageDto: any) {
     if(file){
-      createImageDto.thumbnail = `/public/images/${file.filename}`;
+      createImageDto.thumbnail = `/public/images?id=${file.filename}`;
     }
     return this.imagesService.create(createImageDto)
   }
@@ -54,7 +54,7 @@ export class ImagesController {
     )
   update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateImageDto: UpdateImageDto) {
     if(file){
-      updateImageDto.thumbnail = `/public/images/${file.filename}`;
+      updateImageDto.thumbnail = `/public/images?id=${file.filename}`;
     }
     return this.imagesService.update(id, updateImageDto)
   }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { Injectable, NotFoundException, HttpStatus } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
 import type { CreateHistoryDto } from "src/dto/create-history.dto"
@@ -18,62 +18,99 @@ export class HistoriesService {
   ) {}
 
   // History methods
-  create(createHistoryDto: CreateHistoryDto): Promise<History> {
+  async create(createHistoryDto: CreateHistoryDto) {
     const history = this.historiesRepository.create(createHistoryDto)
-    return this.historiesRepository.save(history)
+    const result = await this.historiesRepository.save(history)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'History created successfully',
+      data: result,
+    }
   }
 
-  findAll(): Promise<History[]> {
-    return this.historiesRepository.find({
+  async findAll() {
+    const result = await this.historiesRepository.find({
       order: { year: "ASC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'All histories fetched successfully',
+      data: result,
+    }
   }
 
-  async findOne(id: string): Promise<History> {
-    const history = await this.historiesRepository.findOne({
-      where: { id },
-    })
+  async findOne(id: string) {
+    const history = await this.historiesRepository.findOne({ where: { id } })
 
     if (!history) {
       throw new NotFoundException(`History with ID ${id} not found`)
     }
 
-    return history
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'History fetched successfully',
+      data: history,
+    }
   }
 
-  async update(id: string, updateHistoryDto: UpdateHistoryDto): Promise<History> {
-    const history = await this.findOne(id)
+  async update(id: string, updateHistoryDto: UpdateHistoryDto) {
+    const history = await this.findOne(id).then(res => res.data)
     Object.assign(history, updateHistoryDto)
-    return this.historiesRepository.save(history)
+    const result = await this.historiesRepository.save(history)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'History updated successfully',
+      data: result,
+    }
   }
 
-  async remove(id: string): Promise<void> {
-    const history = await this.findOne(id)
+  async remove(id: string) {
+    const history = await this.findOne(id).then(res => res.data)
     await this.historiesRepository.remove(history)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'History deleted successfully',
+      data: null,
+    }
   }
 
-  async findHighlighted(): Promise<History[]> {
-    return this.historiesRepository.find({
+  async findHighlighted() {
+    const result = await this.historiesRepository.find({
       where: { highlight: true },
       order: { year: "ASC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Highlighted histories fetched successfully',
+      data: result,
+    }
   }
 
   // Histories Leader methods
-  async createLeader(createHistoriesLeaderDto: CreateHistoriesLeaderDto): Promise<HistoriesLeader> {
-    const user = await this.usersRepository.findOne({where:{id:createHistoriesLeaderDto.user}})
-    const leader = this.historiesLeaderRepository.create({...createHistoriesLeaderDto,user})
-    return this.historiesLeaderRepository.save(leader)
+  async createLeader(createHistoriesLeaderDto: CreateHistoriesLeaderDto) {
+    const user = await this.usersRepository.findOne({ where: { id: createHistoriesLeaderDto.user } })
+    const leader = this.historiesLeaderRepository.create({ ...createHistoriesLeaderDto, user })
+    const result = await this.historiesLeaderRepository.save(leader)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'HistoriesLeader created successfully',
+      data: result,
+    }
   }
 
-  findAllLeaders(): Promise<HistoriesLeader[]> {
-    return this.historiesLeaderRepository.find({
+  async findAllLeaders() {
+    const result = await this.historiesLeaderRepository.find({
       relations: ["user"],
       order: { period: "ASC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'All leader histories fetched successfully',
+      data: result,
+    }
   }
 
-  async findOneLeader(id: string): Promise<HistoriesLeader> {
+  async findOneLeader(id: string) {
     const leader = await this.historiesLeaderRepository.findOne({
       where: { id },
       relations: ["user"],
@@ -83,17 +120,31 @@ export class HistoriesService {
       throw new NotFoundException(`Leader history with ID ${id} not found`)
     }
 
-    return leader
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Leader history fetched successfully',
+      data: leader,
+    }
   }
 
-  async updateLeader(id: string, updateHistoriesLeaderDto: UpdateHistoriesLeaderDto): Promise<HistoriesLeader> {
-    const leader = await this.findOneLeader(id)
+  async updateLeader(id: string, updateHistoriesLeaderDto: UpdateHistoriesLeaderDto) {
+    const leader = await this.findOneLeader(id).then(res => res.data)
     Object.assign(leader, updateHistoriesLeaderDto)
-    return this.historiesLeaderRepository.save(leader)
+    const result = await this.historiesLeaderRepository.save(leader)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Leader history updated successfully',
+      data: result,
+    }
   }
 
-  async removeLeader(id: string): Promise<void> {
-    const leader = await this.findOneLeader(id)
+  async removeLeader(id: string) {
+    const leader = await this.findOneLeader(id).then(res => res.data)
     await this.historiesLeaderRepository.remove(leader)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Leader history deleted successfully',
+      data: null,
+    }
   }
 }

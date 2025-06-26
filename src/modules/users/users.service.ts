@@ -1,37 +1,43 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { Injectable, NotFoundException, HttpStatus } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { In, type Repository } from "typeorm"
-import type { CreateUserDto } from "src/dto/create-user.dto"
-import type { UpdateUserDto } from "src/dto/update-user.dto"
+import { In, Repository } from "typeorm"
+import { CreateUserDto } from "src/dto/create-user.dto"
+import { UpdateUserDto } from "src/dto/update-user.dto"
 import { User } from "src/database/entities/users/user.entity"
 import { Group } from "src/database/entities/groups/group.entity"
 
 @Injectable()
 export class UsersService {
- 
-
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-     @InjectRepository(Group)
+    @InjectRepository(Group)
     private groupsRepository: Repository<Group>,
-  ) {
-  
+  ) {}
+
+  async create(createUserDto: CreateUserDto) {
+    const group = await this.groupsRepository.findOne({ where: { id: createUserDto.group } })
+    const user = this.usersRepository.create({ ...createUserDto, group })
+    const result = await this.usersRepository.save(user)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: "User created successfully",
+      data: result,
+    }
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const group = await this.groupsRepository.findOne({where:{id:createUserDto.group}})
-    const user = this.usersRepository.create({...createUserDto,group})
-    return this.usersRepository.save(user)
-  }
-
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find({
+  async findAll() {
+    const users = await this.usersRepository.find({
       relations: ["group", "historiesLeader"],
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: "All users fetched successfully",
+      data: users,
+    }
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string) {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ["group", "historiesLeader"],
@@ -41,31 +47,55 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`)
     }
 
-    return user
+    return {
+      statusCode: HttpStatus.OK,
+      message: "User fetched successfully",
+      data: user,
+    }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id)
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id).then(res => res.data)
     Object.assign(user, updateUserDto)
-    return this.usersRepository.save(user)
+    const result = await this.usersRepository.save(user)
+    return {
+      statusCode: HttpStatus.OK,
+      message: "User updated successfully",
+      data: result,
+    }
   }
 
-  async remove(id: string): Promise<void> {
-    const user = await this.findOne(id)
+  async remove(id: string) {
+    const user = await this.findOne(id).then(res => res.data)
     await this.usersRepository.remove(user)
+    return {
+      statusCode: HttpStatus.OK,
+      message: "User deleted successfully",
+      data: null,
+    }
   }
 
-  async findByGroup(groupId: string): Promise<User[]> {
-    return this.usersRepository.find({
-      where: { group:In([groupId]) },
+  async findByGroup(groupId: string) {
+    const users = await this.usersRepository.find({
+      where: { group: In([groupId]) },
       relations: ["group"],
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Users in group ${groupId} fetched successfully`,
+      data: users,
+    }
   }
 
-  async findByType(type: string): Promise<User[]> {
-    return this.usersRepository.find({
+  async findByType(type: string) {
+    const users = await this.usersRepository.find({
       where: { type: type as any },
       relations: ["group"],
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Users with type "${type}" fetched successfully`,
+      data: users,
+    }
   }
 }

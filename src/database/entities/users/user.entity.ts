@@ -25,6 +25,12 @@ export class User {
   @Column({nullable:true, length: 255 })
   position: string
 
+  @Column({nullable:true, length: 255 })
+  username: string
+
+  @Column({nullable:true, length: 255 })
+  password: string
+
   @Column({ nullable: true })
   avatar: string
 
@@ -63,6 +69,9 @@ export class User {
     (history) => history.user,
   )
   historiesLeader: HistoriesLeader[]
+
+  @Column({ type:"bit",default:0 })
+  activity: boolean
 
   @CreateDateColumn({ type: 'datetime2' })
   created_at: Date;

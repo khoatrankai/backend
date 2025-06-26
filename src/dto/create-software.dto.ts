@@ -1,3 +1,4 @@
+import { Transform } from "class-transformer"
 import { IsString, IsNumber, IsBoolean, IsOptional } from "class-validator"
 
 export class CreateSoftwareDto {
@@ -39,6 +40,7 @@ export class CreateSoftwareDto {
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   featured: boolean
 
   @IsString()

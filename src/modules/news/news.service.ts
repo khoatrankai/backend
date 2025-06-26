@@ -112,7 +112,7 @@ export class NewsService {
 
   const news = await this.newsRepository.find({
     relations: ["category", "categoryActivity", "region", "slides"],
-    order: { date: "DESC",featured:'DESC' },
+    order: { created_at: "DESC",featured:'DESC' },
     skip: (pageNumber - 1) * limitNumber,
     take: limitNumber,
   })
@@ -175,7 +175,7 @@ export class NewsService {
     const news = await this.newsRepository.find({
       where: { category: In([categoryId]) },
       relations: ["category", "categoryActivity", "region"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
       skip:(pageNumber - 1) * Number(limitNumber),
       take:limitNumber
     })
@@ -197,7 +197,7 @@ export class NewsService {
     const news = await this.newsRepository.find({
       where: { type: type as any },
       relations: ["category", "categoryActivity", "region"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
       skip:(pageNumber - 1) * Number(limitNumber),
       take:limitNumber
     })
@@ -233,7 +233,7 @@ export class NewsService {
 
   async findAllCategories() {
     const categories = await this.categoryNewsRepository.find({
-      relations: ["news"],
+      relations: ["news"],order: { created_at: "ASC" },
     })
 
     return {

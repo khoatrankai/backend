@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common"
-import type { CreateHistoryDto } from "src/dto/create-history.dto"
-import type { UpdateHistoryDto } from "src/dto/update-history.dto"
-import type { CreateHistoriesLeaderDto } from "src/dto/create-histories-leader.dto"
-import type { UpdateHistoriesLeaderDto } from "src/dto/update-histories-leader.dto"
 import { HistoriesService } from "./histories.service"
+import { CreateHistoriesLeaderDto } from "src/dto/create-histories-leader.dto"
+import { CreateHistoryDto } from "src/dto/create-history.dto"
+import { UpdateHistoriesLeaderDto } from "src/dto/update-histories-leader.dto"
+import { UpdateHistoryDto } from "src/dto/update-history.dto"
 
 @Controller("histories")
 export class HistoriesController {

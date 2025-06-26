@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from "@nestjs/common"
-import type { CreateUserDto } from "src/dto/create-user.dto"
-import type { UpdateUserDto } from "src/dto/update-user.dto"
 import { UsersService } from "./users.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { storageConfig } from "src/lib/multer-upload";
+import { CreateUserDto } from "src/dto/create-user.dto";
+import { UpdateUserDto } from "src/dto/update-user.dto";
 
 @Controller("users")
 export class UsersController {
@@ -11,7 +11,7 @@ export class UsersController {
 
   @Post()
   @UseInterceptors(
-  FileInterceptor('coverImage', {
+  FileInterceptor('coverAvatar', {
         storage: storageConfig,
       }),
     )
@@ -33,7 +33,15 @@ export class UsersController {
   }
 
   @Patch(":id")
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UseInterceptors(
+  FileInterceptor('coverAvatar', {
+        storage: storageConfig,
+      }),
+    )
+  update(@UploadedFile() file: Express.Multer.File,@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+     if (file) {
+        updateUserDto.avatar = `/public/images?id=${file.filename}`;
+      }
     return this.usersService.update(id, updateUserDto)
   }
 

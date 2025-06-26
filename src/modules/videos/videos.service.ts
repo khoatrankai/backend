@@ -43,7 +43,7 @@ export class VideosService {
   async findAll(): Promise<any> {
     const videos = await this.videosRepository.find({
       relations: ["category"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
     });
 
     return {
@@ -113,7 +113,7 @@ export class VideosService {
     const videos = await this.videosRepository.find({
       where: { category: In([categoryId]) },
       relations: ["category"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
     });
 
     return {

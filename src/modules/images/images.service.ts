@@ -33,7 +33,7 @@ export class ImagesService {
   async findAll() {
     const data = await this.imagesRepository.find({
       relations: ["category"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
     })
 
     return {
@@ -86,7 +86,7 @@ export class ImagesService {
     const data = await this.imagesRepository.find({
       where: { category: In([categoryId]) },
       relations: ["category"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
     })
 
     return {

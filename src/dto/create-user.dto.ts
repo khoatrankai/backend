@@ -1,10 +1,19 @@
-import { IsString, IsEmail, IsEnum, IsOptional, IsArray } from "class-validator"
+import { Transform } from "class-transformer"
+import { IsString, IsEmail, IsEnum, IsOptional, IsArray, IsBoolean } from "class-validator"
 import { UserType } from "src/database/entities/users/user.entity"
 
 export class CreateUserDto {
   @IsString()
   @IsOptional()
   name?: string
+
+  @IsString()
+  @IsOptional()
+  username?: string
+
+  @IsString()
+  @IsOptional()
+  password?: string
 
   @IsString()
   @IsOptional()
@@ -37,6 +46,11 @@ export class CreateUserDto {
   @IsEnum(UserType)
   @IsOptional()
   type: UserType
+
+  @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }) => value === 'true' || value === true)
+    activity: boolean
 
   @IsOptional()
   @IsString()

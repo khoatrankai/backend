@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { Injectable, NotFoundException, HttpStatus } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Award } from "src/database/entities/awards/award.entity"
 import { CreateAwardDto } from "src/dto/create-award.dto"
@@ -8,6 +8,7 @@ import type { Repository } from "typeorm"
 @Injectable()
 export class AwardsService {
   private awardsRepository: Repository<Award>
+
   constructor(
     @InjectRepository(Award)
     awardsRepository: Repository<Award>,
@@ -15,18 +16,28 @@ export class AwardsService {
     this.awardsRepository = awardsRepository
   }
 
-  create(createAwardDto: CreateAwardDto): Promise<Award> {
+  async create(createAwardDto: CreateAwardDto) {
     const award = this.awardsRepository.create(createAwardDto)
-    return this.awardsRepository.save(award)
+    const result = await this.awardsRepository.save(award)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: "Award created successfully",
+      data: result,
+    }
   }
 
-  findAll(): Promise<Award[]> {
-    return this.awardsRepository.find({
+  async findAll() {
+    const result = await this.awardsRepository.find({
       order: { year: "DESC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: "All awards fetched successfully",
+      data: result,
+    }
   }
 
-  async findOne(id: string): Promise<Award> {
+  async findOne(id: string) {
     const award = await this.awardsRepository.findOne({
       where: { id },
     })
@@ -35,31 +46,55 @@ export class AwardsService {
       throw new NotFoundException(`Award with ID ${id} not found`)
     }
 
-    return award
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Award fetched successfully",
+      data: award,
+    }
   }
 
-  async update(id: string, updateAwardDto: UpdateAwardDto): Promise<Award> {
-    const award = await this.findOne(id)
+  async update(id: string, updateAwardDto: UpdateAwardDto) {
+    const award = await this.findOne(id).then(res => res.data)
     Object.assign(award, updateAwardDto)
-    return this.awardsRepository.save(award)
+    const result = await this.awardsRepository.save(award)
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Award updated successfully",
+      data: result,
+    }
   }
 
-  async remove(id: string): Promise<void> {
-    const award = await this.findOne(id)
+  async remove(id: string) {
+    const award = await this.findOne(id).then(res => res.data)
     await this.awardsRepository.remove(award)
+    return {
+      statusCode: HttpStatus.OK,
+      message: "Award deleted successfully",
+      data: null,
+    }
   }
 
-  async findByYear(year: string): Promise<Award[]> {
-    return this.awardsRepository.find({
+  async findByYear(year: string) {
+    const result = await this.awardsRepository.find({
       where: { year },
       order: { name: "ASC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Awards in year ${year} fetched successfully`,
+      data: result,
+    }
   }
 
-  async findByLevel(level: string): Promise<Award[]> {
-    return this.awardsRepository.find({
+  async findByLevel(level: string) {
+    const result = await this.awardsRepository.find({
       where: { level },
       order: { year: "DESC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Awards with level "${level}" fetched successfully`,
+      data: result,
+    }
   }
 }

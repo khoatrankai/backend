@@ -1,13 +1,13 @@
-import { IsString, IsNumber, IsOptional } from "class-validator"
+import { IsString, IsNumber, IsOptional, IsEnum } from "class-validator"
+import { DocumentType } from "src/database/entities/documents/document.entity"
 
 export class CreateDocumentDto {
   @IsString()
   @IsOptional()
   title?: string
 
-  @IsString()
-  @IsOptional()
-  type?: string
+  @IsEnum(DocumentType)
+  type?: DocumentType
 
   @IsString()
   @IsOptional()
@@ -24,6 +24,10 @@ export class CreateDocumentDto {
   @IsOptional()
   @IsNumber()
   downloads?: number
+
+  @IsOptional()
+  @IsString()
+  link?: string
 
   @IsString()
   @IsOptional()

@@ -34,16 +34,20 @@ export class TracksService {
   }
 
   async findAll() {
-    const result = await this.tracksRepository.find({
-      relations: ["category"],
-      order: { plays: "DESC" },
-    });
-    return {
-      statusCode: HttpStatus.OK,
-      message: "Fetched all tracks",
-      data: result,
-    };
-  }
+  const result = await this.tracksRepository.find({
+    relations: ["category"],
+    order: {
+      featured: "DESC",     // true (nổi bật) trước
+      created_at: "DESC",   // mới nhất trước
+    },
+  });
+
+  return {
+    statusCode: HttpStatus.OK,
+    message: "Fetched all tracks",
+    data: result,
+  };
+}
 
   async findOne(id: string) {
     const track = await this.tracksRepository.findOne({

@@ -3,9 +3,9 @@ import { CategoryArticle } from "./category-article.entity"
 
 export enum ArticleType {
   CCHC = "cchc",
-  KHCN = "khcn",
-  QLNN = "qlnn",
-  GDDT = "gddt",
+  TTTT = "tttt",
+  TTPL = "ttpl",
+  KHQS = "khqs",
 }
 
 @Entity("articles")

@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { HttpStatus, Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { In, type Repository } from "typeorm"
-import type { CreateDocumentDto } from "src/dto/create-document.dto"
-import type { UpdateDocumentDto } from "src/dto/update-document.dto"
+import { In, Repository } from "typeorm"
+import { CreateDocumentDto } from "src/dto/create-document.dto"
+import { UpdateDocumentDto } from "src/dto/update-document.dto"
 import { CategoryDocument } from "src/database/entities/documents/category-document.entity"
-import { Document } from "src/database/entities/documents/document.entity"
+import { Document, DocumentType } from "src/database/entities/documents/document.entity"
+import { CreateCategoryDocumentDto } from "src/dto/create-category-document.dto"
 
 @Injectable()
 export class DocumentsService {
@@ -15,20 +16,32 @@ export class DocumentsService {
     private readonly categoryDocumentRepository: Repository<CategoryDocument>,
   ) {}
 
-  async create(createDocumentDto: CreateDocumentDto): Promise<Document> {
-    const category = await this.categoryDocumentRepository.findOne({where:{id:createDocumentDto.category}})
-    const document = this.documentsRepository.create({...createDocumentDto,category})
-    return this.documentsRepository.save(document)
-  }
-
-  findAll(): Promise<Document[]> {
-    return this.documentsRepository.find({
-      relations: ["category"],
-      order: { date: "DESC" },
+  async create(createDocumentDto: CreateDocumentDto) {
+    const category = await this.categoryDocumentRepository.findOne({
+      where: { id: createDocumentDto.category },
     })
+    const document = this.documentsRepository.create({ ...createDocumentDto, category })
+    const result = await this.documentsRepository.save(document)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Document created successfully',
+      data: result,
+    }
   }
 
-  async findOne(id: string): Promise<Document> {
+  async findAll() {
+    const result = await this.documentsRepository.find({
+      relations: ["category"],
+      order: { created_at: "DESC" },
+    })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Documents fetched successfully',
+      data: result,
+    }
+  }
+
+  async findOne(id: string) {
     const document = await this.documentsRepository.findOne({
       where: { id },
       relations: ["category"],
@@ -38,45 +51,90 @@ export class DocumentsService {
       throw new NotFoundException(`Document with ID ${id} not found`)
     }
 
-    return document
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Document fetched successfully',
+      data: document,
+    }
   }
 
-  async update(id: string, updateDocumentDto: UpdateDocumentDto): Promise<Document> {
-    const document = await this.findOne(id)
+  async update(id: string, updateDocumentDto: UpdateDocumentDto) {
+    const document = await this.findOne(id).then(res => res.data)
     Object.assign(document, updateDocumentDto)
-    return this.documentsRepository.save(document)
+    const result = await this.documentsRepository.save(document)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Document updated successfully',
+      data: result,
+    }
   }
 
-  async remove(id: string): Promise<void> {
-    const document = await this.findOne(id)
+  async remove(id: string) {
+    const document = await this.findOne(id).then(res => res.data)
     await this.documentsRepository.remove(document)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Document deleted successfully',
+      data: null,
+    }
   }
 
-  async findByCategory(categoryId: string): Promise<Document[]> {
-    return this.documentsRepository.find({
-      where: { category:In([categoryId]) },
+  async findByCategory(categoryId: string) {
+    const result = await this.documentsRepository.find({
+      where: { category: In([categoryId]) },
       relations: ["category"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Documents fetched by category successfully',
+      data: result,
+    }
   }
 
-  async findByType(type: string): Promise<Document[]> {
-    return this.documentsRepository.find({
-      where: { type },
+  async findByType(type: string) {
+    const result = await this.documentsRepository.find({
+      where: { type: type as DocumentType },
       relations: ["category"],
-      order: { date: "DESC" },
+      order: { created_at: "DESC" },
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Documents fetched by type successfully',
+      data: result,
+    }
   }
 
-  async incrementDownloads(id: string): Promise<Document> {
-    const document = await this.findOne(id)
+  async incrementDownloads(id: string) {
+    const document = await this.findOne(id).then(res => res.data)
     document.downloads += 1
-    return this.documentsRepository.save(document)
+    const result = await this.documentsRepository.save(document)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Document download count incremented',
+      data: result,
+    }
   }
 
-  findAllCategories(): Promise<CategoryDocument[]> {
-    return this.categoryDocumentRepository.find({
+  async findAllCategories() {
+    const result = await this.categoryDocumentRepository.find({
       relations: ["documents"],
     })
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Categories fetched successfully',
+      data: result,
+    }
+  }
+
+  async createCategory(createCategoryDto: CreateCategoryDocumentDto) {
+    const category = this.categoryDocumentRepository.create(createCategoryDto)
+    const result = await this.categoryDocumentRepository.save(category)
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'CategoryDocument created successfully',
+      data: result,
+    }
   }
 }

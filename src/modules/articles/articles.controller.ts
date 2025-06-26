@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestj
 import { CreateArticleDto } from "src/dto/create-article.dto"
 import { UpdateArticleDto } from "src/dto/update-article.dto"
 import { ArticlesService } from "./articles.service"
+import { CreateCategoryArticleDto } from "src/dto/create-category-article.dto"
 
 @Controller("articles")
 export class ArticlesController {
@@ -50,4 +51,9 @@ export class ArticlesController {
   remove(@Param("id") id: string) {
     return this.articlesService.remove(id)
   }
+
+   @Post("categories")
+    async createCategory(@Body() createCategoryDto: CreateCategoryArticleDto) {
+      return this.articlesService.createCategory(createCategoryDto)
+    }
 }

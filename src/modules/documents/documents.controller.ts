@@ -1,14 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from "@nestjs/common"
 import { CreateDocumentDto } from "src/dto/create-document.dto";
 import { UpdateDocumentDto } from "src/dto/update-document.dto";
 import { DocumentsService } from "./documents.service";
+import { CreateCategoryDocumentDto } from "src/dto/create-category-document.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { storageDocumentsConfig } from "src/lib/multer-upload";
 
 @Controller("documents")
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post()
-  create(@Body() createDocumentDto: CreateDocumentDto) {
+  @UseInterceptors(
+      FileInterceptor('coverDocument', {
+        storage: storageDocumentsConfig,
+      }),
+    )
+  create(@UploadedFile() file: Express.Multer.File,@Body() createDocumentDto: CreateDocumentDto) {
+    if (file) {
+        createDocumentDto.link = `/public/documents?id=${file.filename}`;
+      }
     return this.documentsService.create(createDocumentDto);
   }
 
@@ -34,7 +45,15 @@ export class DocumentsController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
+  @UseInterceptors(
+      FileInterceptor('coverDocument', {
+        storage: storageDocumentsConfig,
+      }),
+    )
+  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
+    if (file) {
+        updateDocumentDto.link = `/public/documents?id=${file.filename}`;
+      }
     return this.documentsService.update(id, updateDocumentDto)
   }
 
@@ -47,4 +66,9 @@ export class DocumentsController {
   remove(@Param("id") id: string) {
     return this.documentsService.remove(id);
   }
+
+  @Post("categories")
+      async createCategory(@Body() createCategoryDto: CreateCategoryDocumentDto) {
+        return this.documentsService.createCategory(createCategoryDto)
+      }
 }

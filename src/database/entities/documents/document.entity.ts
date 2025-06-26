@@ -1,6 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn ,CreateDateColumn,UpdateDateColumn } from "typeorm"
 import { CategoryDocument } from "./category-document.entity"
-
+export enum DocumentType {
+  CHI_THI = "chi_thi",
+  THONG_BAO = "thong_bao",
+  KE_HOACH = "ke_hoach",
+  QUY_DINH = "quy_dinh",
+}
 @Entity("documents")
 export class Document {
   @PrimaryGeneratedColumn("uuid")
@@ -9,8 +14,12 @@ export class Document {
   @Column({nullable:true, length: 500 })
   title: string
 
-  @Column({nullable:true, length: 100 })
-  type: string
+  @Column({
+   type: "nvarchar",
+   length: 50,
+   default: DocumentType.CHI_THI,
+   })
+  type: DocumentType
 
 
   @ManyToOne(
@@ -31,6 +40,9 @@ export class Document {
 
   @Column({nullable:true, length: 50 })
   size: string
+
+  @Column({ nullable: true })
+  link: string
 
   @CreateDateColumn({ type: 'datetime2' })
   created_at: Date;
