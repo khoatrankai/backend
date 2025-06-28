@@ -1,26 +1,46 @@
-import { Controller, Get, Post, Patch, Param, Delete, Query, UploadedFile, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, Post, Patch, Param, Delete, Query,  UseInterceptors, UploadedFiles } from "@nestjs/common"
 import type { UpdateVideoDto } from "src/dto/update-video.dto"
 import { Body } from "@nestjs/common"
 import { VideosService } from "./videos.service"
 import { CreateCategoryVideoDto } from "src/dto/create-category-videos.dto"
 import { CreateVideoDto } from "src/dto/create-video.dto"
-import { FileInterceptor } from "@nestjs/platform-express"
-import { storageVideosConfig } from "src/lib/multer-upload"
+import { AnyFilesInterceptor } from "@nestjs/platform-express"
+import { customStorageConfig } from "src/lib/multer-upload"
 
 @Controller("videos")
 export class VideosController {
   constructor(private readonly videosService: VideosService) {}
 
   @Post()
+  // @UseInterceptors(
+  //     FileInterceptor('coverVideo', {
+  //       storage: storageVideosConfig,
+  //     }),
+  //   )
+  // @UseInterceptors(
+  //     FileInterceptor('coverThumbnail', {
+  //       storage: storageConfig,
+  //     }),
+  //   )
   @UseInterceptors(
-      FileInterceptor('coverVideo', {
-        storage: storageVideosConfig,
-      }),
-    )
-  create(@UploadedFile() file: Express.Multer.File,@Body() createVideoDto: CreateVideoDto) {
-    if(file){
-      createVideoDto.link = `/public/videos?id=${file.filename}`;
+              AnyFilesInterceptor({
+                storage: customStorageConfig,
+                // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
+              }),
+            )
+  create(@UploadedFiles() files: Express.Multer.File[],@Body() createVideoDto: CreateVideoDto) {
+    const video = files.find(f => f.fieldname === 'coverVideo');
+    const thumbnail = files.find(f => f.fieldname === 'coverThumbnail');
+    if(video){
+      createVideoDto.link = `/public/videos?id=${video.filename}`;
     }
+    if(thumbnail){
+      createVideoDto.thumbnail = `/public/images?id=${thumbnail.filename}`;
+    }
+    // if(file){
+    //   createVideoDto.link = `/public/videos?id=${file.filename}`;
+    // }
+    // console.log(files)
     return this.videosService.create(createVideoDto)
   }
 
@@ -49,13 +69,19 @@ export class VideosController {
 
   @Patch(":id")
   @UseInterceptors(
-      FileInterceptor('coverVideo', {
-        storage: storageVideosConfig,
-      }),
-    )
-  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateVideoDto: UpdateVideoDto) {
-      if(file){
-      updateVideoDto.link = `/public/videos?id=${file.filename}`;
+              AnyFilesInterceptor({
+                storage: customStorageConfig,
+                // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
+              }),
+            )
+  update(@UploadedFiles() files: Express.Multer.File[],@Param("id") id: string, @Body() updateVideoDto: UpdateVideoDto) {
+     const video = files.find(f => f.fieldname === 'coverVideo');
+    const thumbnail = files.find(f => f.fieldname === 'coverThumbnail');
+    if(video){
+      updateVideoDto.link = `/public/videos?id=${video.filename}`;
+    }
+    if(thumbnail){
+      updateVideoDto.thumbnail = `/public/images?id=${thumbnail.filename}`;
     }
     return this.videosService.update(id, updateVideoDto)
   }

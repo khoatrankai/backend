@@ -1,14 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put, UseInterceptors, UploadedFile } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put, UseInterceptors, UploadedFiles } from "@nestjs/common"
 // import type { CreateNewsDto } from "src/dto/create-news.dto"
 import { NewsService } from "./news.service"
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CreateRegionDto } from "src/dto/create-region.dto"
 import { UpdateRegionDto } from "src/dto/update-region.dto"
 import { CreateCategoryActivityDto } from "src/dto/create-category-activity.dto"
 import { UpdateCategoryActivityDto } from "src/dto/update-category-activity.dto"
 import { CreateNewsDto } from "src/dto/create-news.dto"
-import { storageConfig } from "src/lib/multer-upload";
+// import { storageConfig } from "src/lib/multer-upload";
 import { UpdateNewsDto } from "src/dto/update-news.dto";
+import { customStorageConfig } from "src/lib/multer-upload";
 
 @Controller("news")
 export class NewsController {
@@ -48,15 +49,25 @@ export class NewsController {
 
 
   @Post()
+  // @UseInterceptors(
+  //   FileInterceptor('coverImage', {
+  //     storage: storageConfig,
+  //   }),
+  // )
   @UseInterceptors(
-    FileInterceptor('coverImage', {
-      storage: storageConfig,
+    AnyFilesInterceptor({
+      storage: customStorageConfig,
+      // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
     }),
   )
-  create(@UploadedFile() file: Express.Multer.File,@Body() createNewsDto: CreateNewsDto) {
-    if (file) {
-        createNewsDto.image = `/public/images?id=${file.filename}`;
-      }
+  create(@UploadedFiles() files: Express.Multer.File[],@Body() createNewsDto: CreateNewsDto) {
+    const image = files.find(f => f.fieldname === 'coverImage');
+    if(image){
+      createNewsDto.image = `/public/images?id=${image.filename}`;
+    }
+    // if (file) {
+    //     createNewsDto.image = `/public/images?id=${file.filename}`;
+    //   }
     return this.newsService.create(createNewsDto)
   }
 
@@ -94,15 +105,22 @@ export class NewsController {
   }
 
   @Patch(":id")
+  // @UseInterceptors(
+  //   FileInterceptor('coverImage', {
+  //     storage: storageConfig,
+  //   }),
+  // )
   @UseInterceptors(
-    FileInterceptor('coverImage', {
-      storage: storageConfig,
+    AnyFilesInterceptor({
+      storage: customStorageConfig,
+      // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
     }),
   )
-  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateNewsDto: UpdateNewsDto) {
-     if (file) {
-        updateNewsDto.image = `/public/images?id=${file.filename}`;
-      }
+  update(@UploadedFiles() files: Express.Multer.File[],@Param("id") id: string, @Body() updateNewsDto: UpdateNewsDto) {
+     const image = files.find(f => f.fieldname === 'coverImage');
+    if(image){
+      updateNewsDto.image = `/public/images?id=${image.filename}`;
+    }
     return this.newsService.update(id, updateNewsDto)
   }
 

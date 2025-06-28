@@ -38,12 +38,21 @@ async function bootstrap() {
     },
   });
   const app = await NestFactory.create(AppModule);
-  app.use("/public", express.static(path.join(__dirname, "../public")));
+  app.use(
+  "/public",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); // hoặc cụ thể "http://localhost:3000"
+    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  },
+  express.static(path.join(__dirname, "../public"))
+)
   app.use(cookieParser());
   app.useGlobalPipes(customValidationPipe);
-  app.enableCors({
-    origin: true, // Next.js đang chạy tại cổng này
-    credentials: true, // Nếu cần gửi cookies
+   app.enableCors({
+    origin: '*', // hoặc '*' nếu test tạm thời
+    credentials: true,
   });
   await app.listen(process.env.PORT || 3001);
 }

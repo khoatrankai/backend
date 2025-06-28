@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFiles } from "@nestjs/common"
 import { CreateDocumentDto } from "src/dto/create-document.dto";
 import { UpdateDocumentDto } from "src/dto/update-document.dto";
 import { DocumentsService } from "./documents.service";
 import { CreateCategoryDocumentDto } from "src/dto/create-category-document.dto";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { storageDocumentsConfig } from "src/lib/multer-upload";
+import { AnyFilesInterceptor } from "@nestjs/platform-express";
+import { customStorageConfig } from "src/lib/multer-upload";
+// import { storageDocumentsConfig } from "src/lib/multer-upload";
 
 @Controller("documents")
 export class DocumentsController {
@@ -12,13 +13,20 @@ export class DocumentsController {
 
   @Post()
   @UseInterceptors(
-      FileInterceptor('coverDocument', {
-        storage: storageDocumentsConfig,
-      }),
-    )
-  create(@UploadedFile() file: Express.Multer.File,@Body() createDocumentDto: CreateDocumentDto) {
-    if (file) {
-        createDocumentDto.link = `/public/documents?id=${file.filename}`;
+  AnyFilesInterceptor({
+    storage: customStorageConfig,
+    // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
+  }),
+)
+  // @UseInterceptors(
+  //     FileInterceptor('coverDocument', {
+  //       storage: storageDocumentsConfig,
+  //     }),
+  //   )
+  create(@UploadedFiles() files: Express.Multer.File[],@Body() createDocumentDto: CreateDocumentDto) {
+    const docFile = files.find(f => f.fieldname === 'coverDocument');
+    if (docFile) {
+        createDocumentDto.link = `/public/documents?id=${docFile.filename}`;
       }
     return this.documentsService.create(createDocumentDto);
   }
@@ -45,14 +53,21 @@ export class DocumentsController {
   }
 
   @Patch(":id")
+  // @UseInterceptors(
+  //     FileInterceptor('coverDocument', {
+  //       storage: storageDocumentsConfig,
+  //     }),
+  //   )
   @UseInterceptors(
-      FileInterceptor('coverDocument', {
-        storage: storageDocumentsConfig,
-      }),
-    )
-  update(@UploadedFile() file: Express.Multer.File,@Param("id") id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
-    if (file) {
-        updateDocumentDto.link = `/public/documents?id=${file.filename}`;
+  AnyFilesInterceptor({
+    storage: customStorageConfig,
+    // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
+  }),
+)
+  update(@UploadedFiles() files: Express.Multer.File[],@Param("id") id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
+    const docFile = files.find(f => f.fieldname === 'coverDocument');
+    if (docFile) {
+        updateDocumentDto.link = `/public/documents?id=${docFile.filename}`;
       }
     return this.documentsService.update(id, updateDocumentDto)
   }

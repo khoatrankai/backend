@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFiles } from "@nestjs/common"
 import { TracksService } from "./tracks.service"
 import { CreateTrackDto } from "src/dto/create-track.dto"
 import { CreateCategoryTrackDto } from "src/dto/create-category-track.dto"
 import { UpdateTrackDto } from "src/dto/update-track.dto"
-import { FileInterceptor } from "@nestjs/platform-express"
-import { storageTracksConfig } from "src/lib/multer-upload"
+import { AnyFilesInterceptor } from "@nestjs/platform-express"
+import { customStorageConfig } from "src/lib/multer-upload"
+// import { storageTracksConfig } from "src/lib/multer-upload"
 
 @Controller("tracks")
 export class TracksController {
@@ -12,13 +13,15 @@ export class TracksController {
 
   @Post()
   @UseInterceptors(
-  FileInterceptor('coverTrack', {
-          storage: storageTracksConfig
-  }),
-    )
-  create(@UploadedFile() file: Express.Multer.File,@Body() createTrackDto: CreateTrackDto) {
-     if(file){
-      createTrackDto.link = `/public/tracks?id=${file.filename}`;
+          AnyFilesInterceptor({
+            storage: customStorageConfig,
+            // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
+          }),
+        )
+  create(@UploadedFiles() files: Express.Multer.File[],@Body() createTrackDto: CreateTrackDto) {
+     const track = files.find(f => f.fieldname === 'coverTrack');
+    if(track){
+      createTrackDto.link = `/public/tracks?id=${track.filename}`;
     }
     return this.tracksService.create(createTrackDto)
   }
@@ -51,11 +54,16 @@ export class TracksController {
 
   @Patch(":id")
   @UseInterceptors(
-  FileInterceptor('coverTrack', {
-          storage: storageTracksConfig
-  }),
-    )
-  update(@Param("id") id: string, @Body() updateTrackDto: UpdateTrackDto) {
+          AnyFilesInterceptor({
+            storage: customStorageConfig,
+            // limits: { fileSize: 1024 * 1024 * 100 }, // Optional
+          }),
+        )
+  update(@UploadedFiles() files: Express.Multer.File[],@Param("id") id: string, @Body() updateTrackDto: UpdateTrackDto) {
+    const track = files.find(f => f.fieldname === 'coverTrack');
+    if(track){
+      updateTrackDto.link = `/public/tracks?id=${track.filename}`;
+    }
     return this.tracksService.update(id, updateTrackDto)
   }
 
